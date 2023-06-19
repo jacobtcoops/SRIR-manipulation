@@ -1,35 +1,35 @@
-function outputSIRsExported = removePD_DS(processedSIRPath, exportedSIRPath)
-%outputIRsExported  removes the pre-delay, direct sound and reverberant sound 
-%   from an SIR
-%   function takes a path and processes all SIRs in that path to remove the
-%   pre-delay, direct sound and reverberant sound
+function outputSRIRsExported = removePD_DS(processedSRIRPath, exportedSRIRPath)
+%outputSRIRsExported    removes the pre-delay, direct sound and reverberant  
+%                       sound from an SRIR
+%   function takes a path and processes all SRIRs in that path to remove 
+%   the pre-delay, direct sound and reverberant sound
 %   function shifts the direct sound to time zero and sets the amplitude of
 %   the following 0.5 ms to zero
 %   it then applies a 1 ms Hanning window
-%   for the first audio file only, it will also generate a reverberant sound
-%   SIR 
+%   for the first audio file only, it will also generate a reverberant 
+%   sound SRIR 
 %   INPUTS
-%       processedSIRPath    the relative path for the pre-processed SIRs
-%       exportedSIRPath     the relative path for the output SIRs
+%       processedSRIRPath    the relative path for the pre-processed SRIRs
+%       exportedSRIRPath     the relative path for the output SRIRs
 %   OUTPUTS
-%       outputSIRsExported  SIRs with direct sound and pre-delay removed
+%       outputSRIRsExported  SRIRs with direct sound and pre-delay removed
     
     % add in required paths
     %   add in processed audio files to project
-    addpath(processedSIRPath);
+    addpath(processedSRIRPath);
     %   add in directory to export audio files to
-    addpath(exportedSIRPath);
+    addpath(exportedSRIRPath);
   
     % place all .wav files in structs
-    fileStruct = dir(fullfile(processedSIRPath, '*.wav'));
+    fileStruct = dir(fullfile(processedSRIRPath, '*.wav'));
 
     % for each file in the folder
     for i = 1: length(fileStruct)
         % read in SIR and sample rate
-        [SIR, Fs] = audioread(strcat(processedSIRPath, fileStruct(i).name));
+        [SRIR, Fs] = audioread(strcat(processedSRIRPath, fileStruct(i).name));
 
         % calculate length of SIR in samples
-        SIRLengthSamples = length(SIR);
+        SRIRLengthSamples = length(SRIR);
         
         % Hanning window
         %   2 ms length; 1 ms half window length
@@ -41,14 +41,14 @@ function outputSIRsExported = removePD_DS(processedSIRPath, exportedSIRPath)
         halfHannWinDec = hanningWindow(winLenSamp/2 + 1 : end, :);
 
         % detect peak
-        [~, peakTimeSample] = max(abs(SIR(:, 1)), [], 'all');
+        [~, peakTimeSample] = max(abs(SRIR(:, 1)), [], 'all');
 
         % approximate the start time by subtracting 1 ms from the peak
         onsetTime = 0.001;
         startTimeSample = peakTimeSample - onsetTime*Fs;
 
         % remove samples before this time
-        shortenedSIR = SIR(startTimeSample: SIRLengthSamples, :);
+        shortenedSRIR = SRIR(startTimeSample: SRIRLengthSamples, :);
 
         % create arrays with multipliers for the reverberant sound
         offsetTime = 0.0005;
@@ -60,31 +60,28 @@ function outputSIRsExported = removePD_DS(processedSIRPath, exportedSIRPath)
 
         ERMultipliers = vertcat(zeros(DSLenSamp, 1), halfHannWinInc,...
             ones(ERLenSamp, 1), halfHannWinDec, ...
-            zeros(length(shortenedSIR) - (winLenSamp/2) - ERLenSamp - (winLenSamp/2) - DSLenSamp, 1));
+            zeros(length(shortenedSRIR) - (winLenSamp/2) - ERLenSamp - ...
+            (winLenSamp/2) - DSLenSamp, 1));
 
-%         figure
-%         plot(ERMultipliers);
-        %xlim([0 200]);
-
-        % Multiply by the SIRs
-        ERSIR = shortenedSIR .* ERMultipliers;
+        % Multiply by the SRIRs
+        ERSRIR = shortenedSRIR .* ERMultipliers;
         
         % Write audio output
         fileNameSplit = split(fileStruct(i).name, '.');
         outputFileName = strcat(fileNameSplit{1}, '_ER.wav');
-        audiowrite(strcat(exportedSIRPath, outputFileName), ERSIR, Fs, 'BitsPerSample', 24);
+        audiowrite(strcat(exportedSRIRPath, outputFileName), ERSRIR, Fs, 'BitsPerSample', 24);
         
-        % store SIR in struct
-        outputSIRsExported{i} = ERSIR;
+        % store SRIR in struct
+        outputSRIRsExported{i} = ERSRIR;
 
-        % create a reverberant sound SIR for the first SIR only
+        % create a reverberant sound SRIR for the first SRIR only
         if (i == 1)
             RSMultipliers = vertcat(zeros(DSLenSamp + winLenSamp/2 + ERLenSamp, 1), halfHannWinInc,...
-                ones(length(shortenedSIR) - (winLenSamp/2) - ERLenSamp - (winLenSamp/2) - DSLenSamp, 1));
-            RSSIR = shortenedSIR .* RSMultipliers;
+                ones(length(shortenedSRIR) - (winLenSamp/2) - ERLenSamp - (winLenSamp/2) - DSLenSamp, 1));
+            RSSIR = shortenedSRIR .* RSMultipliers;
 
             outputFileName_RS = strcat(fileNameSplit{1}, '_RS.wav');
-            audiowrite(strcat(exportedSIRPath, outputFileName_RS), RSSIR, Fs, 'BitsPerSample', 24);
+            audiowrite(strcat(exportedSRIRPath, outputFileName_RS), RSSIR, Fs, 'BitsPerSample', 24);
 
             % Plot W channel input and output waveform for comparison
 %             figure

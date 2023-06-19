@@ -1,25 +1,25 @@
-function outputIRsNormalised = ambisonicOmniConverter(rawIRPath, processedIRPath)
-%ambisonicOmniConverter     converts folder of SIRs to omnidirectional
-%   function takes in a path and converts groups of four SIRs from a single
-%   source-receiver combination with 4 orientations to a single,
-%   omnidirectional SIR
+function outputSRIRsNormalised = ambisonicOmniConverter(rawSRIRPath, processedSRIRPath)
+%ambisonicOmniConverter     converts folder of SRIRs to omnidirectional
+%   function takes in a path and converts groups of four SRIRs from a 
+%   single source-receiver combination with 4 orientations to a single,
+%   omnidirectional SRIR
 %   this interfaces with the function NESWtoOmni.m
-%   the resultant SIRs are saved in the processedIRPath
+%   the resultant SRIRs are saved in the processedSRIRPath
 %   INPUT
-%       rawIRPath           relative path for raw SIRs
-%       processedIRPath     relative path for processed SIRs
+%       rawSRIRPath           relative path for raw SRIRs
+%       processedSRIRPath     relative path for processed SRIRs
 %   OUTPUT
-%       outputIRsNormalised onmidirectional SIRs that have been normalised
+%       outputIRsNormalised onmidirectional SRIRs that have been normalised
 %                           relative to one another
 
     % add in required paths
     %   add in raw audio files to project
-    addpath(rawIRPath);
+    addpath(rawSRIRPath);
     %   add in directory for processed audio files
-    addpath(processedIRPath);
+    addpath(processedSRIRPath);
     
     % place all .wav files in structs
-    fileStruct = dir(fullfile(rawIRPath,'*.wav'));
+    fileStruct = dir(fullfile(rawSRIRPath,'*.wav'));
     
     % loop through audio files in groups of four
     %   this assumes appropriate naming of files (i.e. N, E, S and W are
@@ -38,13 +38,13 @@ function outputIRsNormalised = ambisonicOmniConverter(rawIRPath, processedIRPath
         % variables
         for k = 1: size(fileNames, 1)
                 if fileNames(k, end - 8) == 'N'
-                    northFileName = strcat(rawIRPath, fileNames(k, :));
+                    northFileName = strcat(rawSRIRPath, fileNames(k, :));
                 elseif fileNames(k, end - 8) == 'E'
-                    eastFileName = strcat(rawIRPath, fileNames(k, :));
+                    eastFileName = strcat(rawSRIRPath, fileNames(k, :));
                 elseif fileNames(k, end - 8) == 'S'
-                    southFileName = strcat(rawIRPath, fileNames(k, :));
+                    southFileName = strcat(rawSRIRPath, fileNames(k, :));
                 elseif fileNames(k, end - 8) == 'W'
-                    westFileName = strcat(rawIRPath, fileNames(k, :));
+                    westFileName = strcat(rawSRIRPath, fileNames(k, :));
                 else
                     % throw error if the file name does not have an 'N', 
                     % 'E', 'S' or 'W' in the expected location
@@ -57,31 +57,31 @@ function outputIRsNormalised = ambisonicOmniConverter(rawIRPath, processedIRPath
                                             southFileName, westFileName);
     end
 
-    % find maximum peak across all IRs
+    % find maximum peak across all SRIRs
     for j = 1: length(outputIRs)
-        % array of maxima across the IRs
+        % array of maxima across the SRIRs
         maxima(j) = max(abs(outputIRs{j}), [], 'all');
     end
     maximum = max(maxima);
 
-    % normalise IRs relative to the maximum peak across all of them
+    % normalise SRIRs relative to the maximum peak across all of them
     for j = 1: length(outputIRs)
-        outputIRsNormalised{j} = 0.99 * outputIRs{j}./maximum;
+        outputSRIRsNormalised{j} = 0.99 * outputIRs{j}./maximum;
     end
 
-    % write each IR to an audio file
+    % write each SRIRs to an audio file
     for k = 1:length(fileStruct)
-        % for each North IR
+        % for each North SRIRs
         if fileStruct(k).name(end - 8) == 'N'
             % use this name to construct the name for the omnidirectional
-            % IR
+            % SRIRs
             inputFileName = fileStruct(k).name;
             splitName = split(inputFileName, "N");
-            outputFileName = strcat(processedIRPath, '/', splitName{1},...
+            outputFileName = strcat(processedSRIRPath, '/', splitName{1},...
                 'Omni', splitName{2});
 
-            % write each IR to an audio file
-            audiowrite( outputFileName, outputIRsNormalised{ceil(k/4)}, ...
+            % write each SRIRs to an audio file
+            audiowrite( outputFileName, outputSRIRsNormalised{ceil(k/4)}, ...
                         Fs, 'BitsPerSample', 24);
         end
     end

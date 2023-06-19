@@ -1,21 +1,21 @@
-function [outputIR, Fs] = NESWtoOmni(northFileName, eastFileName,...
+function [outputSRIR, Fs] = NESWtoOmni(northFileName, eastFileName,...
     southFileName, westFileName)
-% NEWStoOmni    sums and normalises IR inputs
-%   function takes the file names (including relative paths) of SIRs 
+% NEWStoOmni    sums and normalises SRIR inputs
+%   function takes the file names (including relative paths) of SRIRs 
 %   recorded from a single source-receiver combination with four source 
 %   orientations
-%   these are summed and normalised to simulate the IR for an
+%   these are summed and normalised to simulate the SRIR for an
 %   onmidirectional source
 %   this will work for any number of channels, provided they are the same
 %   for each audio file
 %   INPUTS
-%       northFileName       file name and relative path for the north SIR
-%       eastFileName        file name and relative path for the east SIR
-%       southFileName       file name and relative path for the south SIR
-%       westFileName        file name and relative path for the west SIR
+%       northFileName       file name and relative path for the north SRIR
+%       eastFileName        file name and relative path for the east SRIR
+%       southFileName       file name and relative path for the south SRIR
+%       westFileName        file name and relative path for the west SRIR
 %   OUTPUTS
-%       outputIR            output IR stored as a matrix
-%       Fs                  sample rate for SIR
+%       outputSRIR            output SRIR stored as a matrix
+%       Fs                  sample rate for SRIR
 
     % load in requried audio files
     [north, Fs] = audioread(northFileName);
@@ -41,5 +41,5 @@ function [outputIR, Fs] = NESWtoOmni(northFileName, eastFileName,...
     end
 
     % sum audio
-    outputIR = north + south + east + west;
+    outputSRIR = north + south + east + west;
 end

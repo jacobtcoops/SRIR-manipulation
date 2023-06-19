@@ -1,27 +1,18 @@
-function createMcfxConfigs(SIRPath)
-%createMcfxConfigs  creates config files for SIRs for use in mcfx convolver
-%                   plugin
+function createMcfxConfigs(SRIRPath)
+%createMcfxConfigs  creates config files for SRIRs for use in mcfx 
+%                   convolver plugin
 %   creates config files for use with 1 input
 %   INPUTS
-%       SIRPath     relative path for SIRs
+%       SRIRPath     relative path for SRIRs
 
     % create list of files
-    wavlist = dir(fullfile(SIRPath, '*.wav'));
+    wavlist = dir(fullfile(SRIRPath, '*.wav'));
 
     % for each file in directory
     for i = 1:size(wavlist,1)
     
         % indicate which file is being processed
         disp(['Processing: ' wavlist(i).name ' ...'])
-%         [y, Fs] = audioread([wavlist(i).folder '/' wavlist(i).name]);
-    
-        % plot figure
-%         figure
-%         hold on
-%         t = (1:size(y,1))'/Fs;
-%         plot(t,20*log10(y(:,1).^2))
-%         ylabel('ETC (dB)')
-%         xlabel('Time (s)')
     
         name = extractBefore(wavlist(i).name,'.wav');
         inchannels = 1; % because it's an impulse response of a single sound source
@@ -34,5 +25,5 @@ function createMcfxConfigs(SIRPath)
         header = "# /impulse/packedmatrix <inchannels> <gain> <delay> <offset> <length> <filename>";
         confstr = string(['/impulse/packedmatrix ' num2str(inchannels) ' 1 0 0 0 ' name '.wav']);
         lines = [header confstr];
-        writelines(lines,[SIRPath name '.conf'])
+        writelines(lines,[SRIRPath name '.conf'])
 end
